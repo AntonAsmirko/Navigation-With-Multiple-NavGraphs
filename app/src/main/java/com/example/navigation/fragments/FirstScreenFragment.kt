@@ -21,7 +21,6 @@ class FirstScreenFragment : Fragment() {
         super.onCreate(savedInstanceState)
     }
 
-    @SuppressLint("RestrictedApi")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -35,12 +34,6 @@ class FirstScreenFragment : Fragment() {
             it.findNavController().navigate(action)
             println(it.findNavController())
         }
-        println("YO")
         return view
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        println("OY")
     }
 }
