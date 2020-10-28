@@ -15,6 +15,11 @@ import com.example.navigation.R
 import kotlinx.android.synthetic.main.fragment_first_screen2.*
 
 class FirstScreenFragment : Fragment() {
+
+    companion object {
+        var globalCount = 0
+    }
+
     val args: FirstScreenFragmentArgs by navArgs()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,6 +32,7 @@ class FirstScreenFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_first_screen2, container, false)
         var count = args.count
+        globalCount = count
         val countDisplay = view.findViewById<TextView>(R.id.display_count)
         countDisplay.text = count.toString()
         view.findViewById<Button>(R.id.increase_count).setOnClickListener {

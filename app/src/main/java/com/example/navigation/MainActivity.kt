@@ -1,10 +1,18 @@
 package com.example.navigation
 
+import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.PersistableBundle
 import androidx.lifecycle.LiveData
 import androidx.navigation.NavController
+import com.example.navigation.fragments.FirstScreenFragment
+import com.example.navigation.fragments.SecondScreenFragment
+import com.example.navigation.fragments.ThirdScreenFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import java.lang.reflect.Array
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
 
@@ -14,10 +22,15 @@ class MainActivity : AppCompatActivity() {
 
     private var currentNavController: LiveData<NavController>? = null
     private lateinit var bottomNavigationView: BottomNavigationView
+    private lateinit var stackGlobal: ArrayList<Int>
+    private var curBackStack = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        stackGlobal =
+            savedInstanceState?.getIntegerArrayList(PERSIST_BOTTOM_NAVIGATION_STATE)
+                ?: ArrayList<Int>().also { it -> it.add(R.id.first_screen) }
         setupBottomNavigation()
         savedInstanceState?.let {
             bottomNavigationView.selectedItemId = it.getInt(PERSIST_BOTTOM_NAVIGATION_STATE)
@@ -29,8 +42,24 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt(PERSIST_BOTTOM_NAVIGATION_STATE, bottomNavigationView.selectedItemId)
+        outState.putIntegerArrayList(PERSIST_BOTTOM_NAVIGATION_STATE, stackGlobal)
         super.onSaveInstanceState(outState)
+    }
+
+    override fun onBackPressed() {
+        if (getCurCount(curBackStack) != 0 || stackGlobal.size == 1) {
+            super.onBackPressed()
+        } else {
+            bottomNavigationView.handleBackButtonPressed(supportFragmentManager, stackGlobal)
+        }
+    }
+
+    private fun getCurCount(num: Int): Int {
+        return when (num) {
+            0 -> FirstScreenFragment.globalCount
+            1 -> SecondScreenFragment.globalCount
+            else -> ThirdScreenFragment.globalCount
+        }
     }
 
     private fun setupBottomNavigation() {
@@ -44,8 +73,9 @@ class MainActivity : AppCompatActivity() {
             navGraphIds = navGraphIds,
             fragmentManager = supportFragmentManager,
             containerId = R.id.my_nav_host_fragment,
-            intent = intent
-        )
+            intent = intent,
+            stackGlobal = stackGlobal
+        ) { newGraph -> curBackStack = newGraph }
         currentNavController = controller
     }
 }

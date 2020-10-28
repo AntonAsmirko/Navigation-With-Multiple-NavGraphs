@@ -17,14 +17,18 @@ package com.example.navigation
  */
 import android.content.Intent
 import android.util.SparseArray
+import android.view.View
 import androidx.core.util.forEach
 import androidx.core.util.set
+import androidx.core.view.size
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * Manages the various graphs needed for a [BottomNavigationView].
@@ -35,7 +39,9 @@ fun BottomNavigationView.setupWithNavController(
     navGraphIds: List<Int>,
     fragmentManager: FragmentManager,
     containerId: Int,
-    intent: Intent
+    intent: Intent,
+    stackGlobal: ArrayList<Int>,
+    callback: (Int) -> Unit
 ): LiveData<NavController> {
 
     // Map of tags
@@ -84,15 +90,19 @@ fun BottomNavigationView.setupWithNavController(
 
     // When a navigation item is selected
     setOnNavigationItemSelectedListener { item ->
+        stackGlobal.add(item.itemId)
         // Don't do anything if the state is state has already been saved.
         if (fragmentManager.isStateSaved) {
             false
         } else {
             val newlySelectedItemTag = graphIdToTagMap[item.itemId]
+            callback(newlySelectedItemTag[newlySelectedItemTag.length - 1].toInt())
             if (selectedItemTag != newlySelectedItemTag) {
                 // Pop everything above the first fragment (the "fixed start destination")
-                fragmentManager.popBackStack(firstFragmentTag,
-                    FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                fragmentManager.popBackStack(
+                    firstFragmentTag,
+                    FragmentManager.POP_BACK_STACK_INCLUSIVE
+                )
                 val selectedFragment = fragmentManager.findFragmentByTag(newlySelectedItemTag)
                         as NavHostFragment
 
@@ -105,7 +115,8 @@ fun BottomNavigationView.setupWithNavController(
                             R.anim.nav_default_enter_anim,
                             R.anim.nav_default_exit_anim,
                             R.anim.nav_default_pop_enter_anim,
-                            R.anim.nav_default_pop_exit_anim)
+                            R.anim.nav_default_pop_exit_anim
+                        )
                         .attach(selectedFragment)
                         .setPrimaryNavigationFragment(selectedFragment)
                         .apply {
@@ -153,6 +164,16 @@ fun BottomNavigationView.setupWithNavController(
     return selectedNavController
 }
 
+fun BottomNavigationView.handleBackButtonPressed(
+    fragmentManager: FragmentManager,
+    stackGlobal: ArrayList<Int>
+) {
+    stackGlobal.removeAt(stackGlobal.size - 1)
+    val id = stackGlobal.removeAt(stackGlobal.size - 1)
+    val menuItem = this.findViewById<View>(id)
+    menuItem.performClick()
+}
+
 private fun BottomNavigationView.setupDeepLinks(
     navGraphIds: List<Int>,
     fragmentManager: FragmentManager,
@@ -171,7 +192,8 @@ private fun BottomNavigationView.setupDeepLinks(
         )
         // Handle Intent
         if (navHostFragment.navController.handleDeepLink(intent)
-            && selectedItemId != navHostFragment.navController.graph.id) {
+            && selectedItemId != navHostFragment.navController.graph.id
+        ) {
             this.selectedItemId = navHostFragment.navController.graph.id
         }
     }

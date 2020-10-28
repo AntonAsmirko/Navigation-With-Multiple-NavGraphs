@@ -12,6 +12,11 @@ import androidx.navigation.fragment.navArgs
 import com.example.navigation.R
 
 class SecondScreenFragment : Fragment() {
+
+    companion object{
+        var globalCount = 0
+    }
+
     val args: SecondScreenFragmentArgs by navArgs()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,6 +29,7 @@ class SecondScreenFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_second_screen, container, false)
         var count = args.count
+        globalCount = count
         val countDisplay = view.findViewById<TextView>(R.id.display_count)
         countDisplay.text = count.toString()
         view.findViewById<Button>(R.id.increase_count).setOnClickListener {
