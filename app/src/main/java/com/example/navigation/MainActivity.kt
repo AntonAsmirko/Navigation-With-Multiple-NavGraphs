@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.PersistableBundle
+import android.util.SparseArray
 import androidx.lifecycle.LiveData
 import androidx.navigation.NavController
 import com.example.navigation.fragments.FirstScreenFragment
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavigationView: BottomNavigationView
     private lateinit var stackGlobal: ArrayList<Int>
     private var curBackStack = 0
+    private val graphIdToTagMap = SparseArray<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,7 +52,11 @@ class MainActivity : AppCompatActivity() {
         if (getCurCount(curBackStack) != 0 || stackGlobal.size == 1) {
             super.onBackPressed()
         } else {
-            bottomNavigationView.handleBackButtonPressed(supportFragmentManager, stackGlobal)
+            curBackStack = bottomNavigationView.handleBackButtonPressed(
+                supportFragmentManager,
+                stackGlobal,
+                graphIdToTagMap
+            )
         }
     }
 
@@ -69,12 +75,14 @@ class MainActivity : AppCompatActivity() {
             R.navigation.second_screen_navigation,
             R.navigation.third_screen_navigation
         )
+        bottomNavigationView.selectedItemId = stackGlobal.last()
         val controller = bottomNavigationView.setupWithNavController(
             navGraphIds = navGraphIds,
             fragmentManager = supportFragmentManager,
             containerId = R.id.my_nav_host_fragment,
             intent = intent,
-            stackGlobal = stackGlobal
+            stackGlobal = stackGlobal,
+            graphIdToTagMap = graphIdToTagMap
         ) { newGraph -> curBackStack = newGraph }
         currentNavController = controller
     }

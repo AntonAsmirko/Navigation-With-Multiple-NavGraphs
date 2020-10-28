@@ -41,11 +41,11 @@ fun BottomNavigationView.setupWithNavController(
     containerId: Int,
     intent: Intent,
     stackGlobal: ArrayList<Int>,
+    graphIdToTagMap: SparseArray<String>,
     callback: (Int) -> Unit
 ): LiveData<NavController> {
 
     // Map of tags
-    val graphIdToTagMap = SparseArray<String>()
     // Result. Mutable live data with the selected controlled
     val selectedNavController = MutableLiveData<NavController>()
 
@@ -96,7 +96,7 @@ fun BottomNavigationView.setupWithNavController(
             false
         } else {
             val newlySelectedItemTag = graphIdToTagMap[item.itemId]
-            callback(newlySelectedItemTag[newlySelectedItemTag.length - 1].toInt())
+            callback(newlySelectedItemTag[newlySelectedItemTag.length - 1] - '0')
             if (selectedItemTag != newlySelectedItemTag) {
                 // Pop everything above the first fragment (the "fixed start destination")
                 fragmentManager.popBackStack(
@@ -166,12 +166,14 @@ fun BottomNavigationView.setupWithNavController(
 
 fun BottomNavigationView.handleBackButtonPressed(
     fragmentManager: FragmentManager,
-    stackGlobal: ArrayList<Int>
-) {
+    stackGlobal: ArrayList<Int>,
+    graphIdToTagMap: SparseArray<String>
+): Int {
     stackGlobal.removeAt(stackGlobal.size - 1)
     val id = stackGlobal.removeAt(stackGlobal.size - 1)
     val menuItem = this.findViewById<View>(id)
     menuItem.performClick()
+    return graphIdToTagMap[id].last() - '0'
 }
 
 private fun BottomNavigationView.setupDeepLinks(
