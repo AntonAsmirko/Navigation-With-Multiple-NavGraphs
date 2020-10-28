@@ -19,6 +19,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         const val PERSIST_BOTTOM_NAVIGATION_STATE = "YO"
+        const val CUR_BACK_STACK = "OY"
     }
 
     private var currentNavController: LiveData<NavController>? = null
@@ -33,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         stackGlobal =
             savedInstanceState?.getIntegerArrayList(PERSIST_BOTTOM_NAVIGATION_STATE)
                 ?: ArrayList<Int>().also { it -> it.add(R.id.first_screen) }
+        curBackStack = savedInstanceState?.getInt(CUR_BACK_STACK) ?: 0
         setupBottomNavigation()
         savedInstanceState?.let {
             bottomNavigationView.selectedItemId = it.getInt(PERSIST_BOTTOM_NAVIGATION_STATE)
@@ -45,6 +47,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putIntegerArrayList(PERSIST_BOTTOM_NAVIGATION_STATE, stackGlobal)
+        outState.putInt(CUR_BACK_STACK, curBackStack)
         super.onSaveInstanceState(outState)
     }
 
